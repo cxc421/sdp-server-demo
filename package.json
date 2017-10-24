@@ -16,5 +16,13 @@
   "bugs": {
     "url": "https://github.com/cxc421/sdp-server-demo/issues"
   },
-  "homepage": "https://github.com/cxc421/sdp-server-demo#readme"
+  "homepage": "https://github.com/cxc421/sdp-server-demo#readme",
+  "devDependencies": {
+    "body-parser": "^1.18.2",
+    "cookie-parser": "^1.4.3",
+    "express": "^4.16.2",
+    "morgan": "^1.9.0",
+    "ua-parser-js": "^0.7.17",
+    "uuid": "^3.1.0"
+  }
 }

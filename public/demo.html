@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title>Demo SDP CGI</title>
+
+</head>
+<body>
+	<h1>Step 1: Register SDP</h1>	
+	<h3>SDP:</h3>
+	<p>
+		<textarea id='sdp-text' rows="4" cols="50">At w3schools.com you will learn how to make a website. We offer free tutorials in all web development technologies.</textarea>		
+	</p>
+	<h3>Prams Key:</h3>
+	<p>
+		<input id="prams-key" type="text" value="name" />
+	</p>
+	<h3>Prams Value:</h3>
+	<p>
+		<input id="prams-value" type="text" value="sdp-test-client-1234" />
+	</p>
+	<button id="register-btn">Send</button>
+	<hr />
+	<h1>Step 2: Query SDP</h1>	
+		<button id="query-btn">Query</button>
+	<hr />	
+	<h1>Step 3: Unregister SDP</h1>	
+		<button id="unregister-btn">Unregister</button>
+	<hr />		
+	<script
+	  src="https://code.jquery.com/jquery-3.2.1.min.js"
+	  integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4="
+	  crossorigin="anonymous"></script>
+	<script type="text/javascript">
+		var key = null;
+
+		$('#register-btn').click(function(){
+			var data = {};
+			data['sdp'] = $('#sdp-text').val();
+			data[ $('#prams-key').val() ] = $('#prams-value').val();
+			// console.log(data);			
+			trans('POST', {
+				url: '/sdp/register',
+				data: data,
+				success: function(json) {
+					console.log(json);
+					if (json.code !== 0) {
+						alert(json.msg);
+					}
+					else {
+						key = json.key;
+					}
+				},
+				error: function() {
+					console.error('Network error!');
+				}				
+			});
+		});
+
+		$('#query-btn').click(function(){
+			trans('POST', {
+				url: '/sdp/query',
+				data: {
+					key: key
+				},
+				success: function(json) {
+					console.log(json);
+				},
+				error: function() {
+					console.error('Network error!');
+				}				
+			});
+		});
+
+		$('#unregister-btn').click(function(){
+			trans('POST', {
+				url: '/sdp/unregister',
+				data: {
+					key: key
+				},
+				success: function(json) {
+					console.log(json);
+				},
+				error: function() {
+					console.error('Network error!');
+				}				
+			});
+		});
+
+		function trans (type, spec) {
+		  var _data, _contentType;
+
+		  if (type === 'GET') {
+		    _data = spec.data;
+		    _contentType = 'application/x-www-form-urlencoded; charset=UTF-8';
+		  }
+		  else {
+		    _data = JSON.stringify(spec.data);
+		    _contentType = 'application/json; charset=utf-8';
+		  }
+
+		  return $.ajax({
+		      url: spec.url,
+		      type: type,
+		      data: _data,
+		      contentType: _contentType,
+		      cache: false,
+		      dataType: 'json',
+		      success: function (json) {
+		        if (spec.success) {
+		          spec.success(json);
+		        }
+		      },
+		      error: function(jqXHR, textStatus, errorThrown) {
+		        var ct = jqXHR.responseText || "";
+		        //console.error('AJAX-IN Error', ct.indexOf('html'), ct.indexOf('Login'), jqXHR);
+		        console.error('AJAX Error', textStatus, jqXHR);
+		        if (spec.error) {
+		          spec.error.apply(null, arguments);
+		        }
+		      },
+		      complete: function () {
+		        if (spec.done) {
+		          spec.done.apply(null, arguments);
+		        }
+		      }
+		  });
+		}		
+	</script>
+</body>
+</html>
