@@ -10,10 +10,11 @@ var logger = require("morgan");
 var uuid = require('uuid');
 // var formidable = require('formidable');
 // var util = require('./lib/util');
-const PUBLIC_FOLDER_PATH = path.resolve(__dirname, "public");
-const HTTP_PORT        = 80;
-const MAX_SDP_STORE    = 10;
-const SDP_EXPIRED_TIME = 30000; // 30 secs
+const PUBLIC_FOLDER_PATH       = path.resolve(__dirname, "public");
+const HTTP_PORT                = 80;
+const MAX_SDP_STORE            = 10;
+const SDP_EXPIRED_TIME_DEFAULT = 30 * 1000; // 30 secs
+let sdpExpiredTime = SDP_EXPIRED_TIME_DEFAULT;
 const sdpStore = {};
 
 function registerSDP(req, res) {
@@ -92,6 +93,30 @@ function unregisterSDP(req, res) {
 	});	
 }
 
+function setExpiredInterval(req, res) {
+	const parms = getReqParam(req);	
+	if (parms['interval'] === undefined ) {
+		return res.json({
+			code: -1,
+			msg: 'Please specify interval.'
+		});
+	}		
+	const time = +parms['interval'];
+	if (Number.isInteger(time) && time > 0) {
+		sdpExpiredTime = time;
+		return res.json({
+			code: 0,
+			msg: 'Set interval to ' + time
+		});		
+	}
+	else {
+		return res.json({
+			code: -2,
+			msg: 'Invalid interval =' + parms['interval'] +'ms'
+		});				
+	}
+}
+
 function getReqParam(req) {  
   var obj, prop, val;
   switch( req.method ) {
@@ -123,7 +148,7 @@ function deleteExpiredSdp() {
 	let curTime = Date.now();
 	for (let prop in sdpStore) {
 		let sdp = sdpStore[prop];
-		if (curTime - sdp.time > SDP_EXPIRED_TIME) {
+		if (curTime - sdp.time > sdpExpiredTime) {
 			delete sdpStore[prop];
 		}
 	}
@@ -145,7 +170,8 @@ function deleteExpiredSdp() {
 	// cgi
 	app.all("/sdp/register", registerSDP);
 	app.all("/sdp/query", querySDP);
-	app.all("/sdp/unregister", unregisterSDP);
+	app.all("/sdp/unregister", unregisterSDP);	
+	app.all('/sdp/set_expired_interval', setExpiredInterval);
 
 	// 404 not found
 	app.use( onRequestNotFound );
